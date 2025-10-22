@@ -41,32 +41,37 @@ class Elevator {
         destinationFloors.add(request.getDropoffFloor());
     }
 
-    public void move() {
+    public String[] move() {
         if (destinationFloors.isEmpty()) {
             currentDirection = Direction.IDLE;
-            return;
+            return null;
         }
 
         int nextFloor = destinationFloors.getFirst();
+        String moves = "";
+        String arrivals = "";
 
         if (nextFloor > currentFloor) {
             currentDirection = Direction.UP;
             currentFloor++;
-            System.out.println("Elevator " + id + ": Moving UP to floor " + currentFloor);
+            moves += "Elevator " + id + ": Moving UP to floor " + currentFloor;
         } else if (nextFloor < currentFloor) {
             currentDirection = Direction.DOWN;
             currentFloor--;
-            System.out.println("Elevator " + id + ": Moving DOWN to floor " + currentFloor);
+            moves += "Elevator " + id + ": Moving DOWN to floor " + currentFloor;
         }
+
 
         if (currentFloor == nextFloor) {
-            arriveAtFloor();
+            arrivals += arriveAtFloor();
         }
+
+        return new String[]{moves, arrivals};
     }
 
-    private void arriveAtFloor() {
+    private String arriveAtFloor() {
         destinationFloors.removeFirst();
-        System.out.println("Elevator " + id + ": Arrived at floor " + currentFloor);
+        return "Elevator " + id + ": Arrived at floor " + currentFloor;
     }
 
     public boolean canTakeRequest(Request request) {
@@ -168,10 +173,29 @@ class ElevatorController {
     }
 
     public void step() {
+
         // Move all elevators
+        StringBuilder move = new StringBuilder("| ");
+        StringBuilder arrivals = new StringBuilder("| ");
+
+
         for (Elevator elevator : elevators) {
-            elevator.move();
+            String[] res = elevator.move();
+
+            if (res != null) {
+                if (!res[0].isEmpty()) {
+                    String paddedString = String.format("%-34s", res[0]);
+                    move.append(paddedString).append(" | ");
+                }
+                if (!res[1].isEmpty()) {
+                    String paddedString = String.format("%-34s", res[1]);
+                    arrivals.append(paddedString).append(" | ");
+                }
+            }
         }
+
+        if (!move.toString().equals("| ")) System.out.println(move);
+        if (!arrivals.toString().equals("| ")) System.out.println(arrivals);
 
         // Process pending requests
         processPendingRequests();
